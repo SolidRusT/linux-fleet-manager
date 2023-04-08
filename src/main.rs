@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use ssh2::Session;
-use toml::Value;
+// use toml::Value;
 use serde_derive::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -87,13 +87,13 @@ fn manage_services(session: &Session, enable: &[String], restart: &[String]) {
 }
 
 fn execute_command(session: &Session, command: &str) {
-  let mut channel = session.shell().unwrap();
-  channel.write_all(command.as_bytes()).unwrap();
-  channel.send_eof().unwrap();
+  let mut channel = session.channel_session().unwrap();
+  channel.exec(command).unwrap();
+  let mut response = String::new();
+  channel.read_to_string(&mut response).unwrap();
+  println!("Output: {}", response);
   channel.wait_close().unwrap();
   println!("Status: {}", channel.exit_status().unwrap());
-  channel.close().unwrap();
-  channel.wait_close().unwrap();
 }
 
 fn read_config<P: AsRef<Path>>(path: P) -> Config {
