@@ -1,0 +1,23 @@
+[[hosts]]
+name = "host1"
+address = "192.168.1.100"
+port = 22
+user = "your_ssh_user"
+password = "your_ssh_password"
+
+[[hosts]]
+name = "host2"
+address = "192.168.1.101"
+port = 22
+user = "your_ssh_user"
+password = "your_ssh_password"
+
+[packages]
+global = ["package1", "package2", "package3"]
+
+[users]
+global = ["user1", "user2", "user3"]
+
+[services]
+enable = ["service1", "service2"]
+restart = ["service3", "service4"]
