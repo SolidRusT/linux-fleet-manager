@@ -1,9 +1,10 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use std::sync::Arc;
 use ssh2::Session;
-// use toml::Value;
 use serde_derive::Deserialize;
+use indicatif::{ProgressBar, ProgressStyle};
 
 #[derive(Debug, Deserialize)]
 struct Config {
@@ -13,7 +14,7 @@ struct Config {
     services: Services,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 struct Host {
     name: String,
     address: String,
@@ -22,6 +23,7 @@ struct Host {
     password: String,
     key_path: Option<String>,
 }
+
 
 #[derive(Debug, Deserialize)]
 struct Packages {
@@ -43,13 +45,26 @@ struct Services {
 async fn main() {
     let config = read_config("config.toml");
 
-    for host in &config.hosts {
-        println!("Connecting to {}", host.name);
-        let session = connect_to_host(host).await;
-        manage_packages(&session, &config.packages.global);
-        manage_users(&session, &config.users.global);
-        manage_services(&session, &config.services.enable, &config.services.restart);
-    }
+    let handles: Vec<_> = config.hosts.iter().map(|host| {
+        let host_name = host.name.clone();
+        let host_config = host.clone();
+        let packages = config.packages.global.clone();
+        let users = config.users.global.clone();
+        let enable = config.services.enable.clone();
+        let restart = config.services.restart.clone();
+
+        tokio::spawn(async move {
+            println!("Connecting to {}", host_name);
+            let session = connect_to_host(&host_config).await;
+            manage_packages(&session, &packages);
+            manage_users(&session, &users);
+            manage_services(&session, &enable, &restart);
+        })
+    }).collect();
+
+    futures::future::join_all(handles).await;
+
+    println!("\nDone with all hosts!");
 }
 
 async fn connect_to_host(host: &Host) -> Session {
