@@ -20,6 +20,7 @@ struct Host {
     port: u16,
     user: String,
     password: String,
+    key_path: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -56,7 +57,20 @@ async fn connect_to_host(host: &Host) -> Session {
     let mut session = Session::new().unwrap();
     session.set_tcp_stream(tcp);
     session.handshake().unwrap();
-    session.userauth_password(&host.user, &host.password).unwrap();
+
+    if let Some(key_path) = &host.key_path {
+        if !key_path.is_empty() {
+            let key_path = Path::new(key_path);
+            session
+                .userauth_pubkey_file(&host.user, None, key_path, None)
+                .unwrap();
+        } else {
+            session.userauth_password(&host.user, &host.password).unwrap();
+        }
+    } else {
+        session.userauth_password(&host.user, &host.password).unwrap();
+    }
+
     assert!(session.authenticated());
     session
 }
