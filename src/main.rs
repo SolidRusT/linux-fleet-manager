@@ -132,25 +132,33 @@ fn manage_packages(session: &Session, packages: &[String]) {
         "sudo apt-get update && sudo apt-get install -y {}",
         package_list
     );
-    execute_command(session, &command);
+    if let Err(e) = execute_command(session, &command) {
+        eprintln!("Error executing command '{}': {}", command, e);
+    }
 }
 
 fn manage_users(session: &Session, users: &[String]) {
     for user in users {
         let command = format!("sudo adduser --disabled-password --gecos '' {}", user);
-        execute_command(session, &command);
+        if let Err(e) = execute_command(session, &command) {
+            eprintln!("Error executing command '{}': {}", command, e);
+        }
     }
 }
 
 fn manage_services(session: &Session, enable: &[String], restart: &[String]) {
     for service in enable {
         let command = format!("sudo systemctl enable {}", service);
-        execute_command(session, &command);
+        if let Err(e) = execute_command(session, &command) {
+            eprintln!("Error executing command '{}': {}", command, e);
+        }
     }
 
     for service in restart {
         let command = format!("sudo systemctl restart {}", service);
-        execute_command(session, &command);
+        if let Err(e) = execute_command(session, &command) {
+            eprintln!("Error executing command '{}': {}", command, e);
+        }
     }
 }
 
