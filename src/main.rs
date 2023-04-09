@@ -54,7 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .unwrap()
                 .progress_chars("##-"),
         );
-        pb.set_message(format!("Connecting to {}", host.name).to_owned());
+        pb.set_message(format!("Pushing to {}", host.name).to_owned());
         Arc::new(Mutex::new(pb))
     }).collect();
 
