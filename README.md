@@ -1,21 +1,22 @@
-# Linux Fleet Manager
+# 🐧 Linux Fleet Manager
 
-Linux Fleet Manager is a robust and efficient tool for managing multiple remote Linux hosts concurrently. It allows you to automate the process of installing packages, creating users, and managing services across a collection of Linux servers. Built with Rust, this tool leverages the concurrency capabilities of Tokio and SSH2 libraries to enable parallel execution on multiple hosts.
+Linux Fleet Manager is a robust and efficient tool for managing multiple remote Linux hosts concurrently. It allows you to automate the process of installing packages, creating users, managing repositories, and controlling services across a collection of Linux servers. Built with Rust, this tool leverages the concurrency capabilities of Tokio and SSH2 libraries to enable parallel execution on multiple hosts.
 
-## Features
+## 🌟 Features
 
 - **Parallel Execution**: Manage multiple remote hosts simultaneously, speeding up the configuration time drastically when dealing with a fleet of servers.
 - **Automated Package Installation**: Define global packages that need to be installed on all hosts.
 - **User Management**: Specify users that need to be created across your servers.
 - **Service Management**: Control services that need to be enabled or restarted across your fleet.
+- **Repository Management**: Automate the cloning of git repositories across your servers.
 
-## Requirements
+## 🔧 Requirements
 
 - Rust 1.53 or higher
 - Cargo
 - Access to target Linux hosts via SSH with appropriate credentials
 
-## Configuration
+## 📝 Configuration
 
 Configure the Linux Fleet Manager by creating a `config.toml` file in the root directory of the project. This file should contain the following sections:
 
@@ -32,13 +33,6 @@ user = "user"
 password = "password"
 key_path = "/path/to/your/private/key"
 ```
-
-- `name`: A human-readable name for the host
-- `address`: The IP address or hostname of the remote host
-- `port`: The SSH port of the remote host (default: 22)
-- `user`: The username to use when connecting to the remote host
-- `password`: The password to use when connecting to the remote host
-- `key_path`: The path to the private key for the remote host (optional, if not provided, password authentication will be used)
 
 ### Packages
 
@@ -68,7 +62,16 @@ enable = ["service1", "service2"]
 restart = ["service3", "service4"]
 ```
 
-## Building
+### Repositories
+
+Define the git repositories you want to clone on all hosts:
+
+```toml
+[repositories]
+global = ["https://github.com/user/repo1.git", "https://github.com/user/repo2.git"]
+```
+
+## 🛠 Building
 
 To build the Linux Fleet Manager, navigate to the project directory and run:
 
@@ -76,7 +79,7 @@ To build the Linux Fleet Manager, navigate to the project directory and run:
 cargo build
 ```
 
-## Running
+## 🚀 Running
 
 To run the Linux Fleet Manager, ensure you have a properly configured `config.toml` file, then execute the following command:
 
@@ -86,10 +89,10 @@ cargo run
 
 The tool will display progress bars for each host as it executes the tasks. When finished, it will display a summary of the actions taken.
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! If you find a bug or have a feature request, please open an issue on the project's GitHub repository. If you want to contribute code, feel free to fork the repository and submit a pull request.
 
 ---
 
-Thank you for using Linux Fleet Manager! If you find this tool helpful, please consider starring the repository on GitHub and sharing it with your friends and colleagues. Your support is greatly appreciated.
+🙏 Thank you for using Linux Fleet Manager! If you find this tool helpful, please consider starring the repository on GitHub and sharing it with your friends and colleagues. Your support is greatly appreciated.
