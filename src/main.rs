@@ -173,13 +173,21 @@ fn manage_services(session: &Session, enable: &[String], restart: &[String]) {
 
 fn manage_repositories(session: &Session, repos: &[String]) {
   for repo in repos {
-      let command = format!("git clone {}", repo);
-      if let Err(e) = execute_command(session, &command) {
-          eprintln!("Error executing command '{}': {}", command, e);
+      let clone_command = format!("git clone {} || true", repo);
+      if let Err(e) = execute_command(session, &clone_command) {
+          eprintln!("Error executing command '{}': {}", clone_command, e);
+      }
+      
+      let repo_name = match repo.rsplit('/').next() {
+          Some(name) => name.replace(".git", ""),
+          None => continue,
+      };
+      let pull_command = format!("cd {} && git pull", repo_name);
+      if let Err(e) = execute_command(session, &pull_command) {
+          eprintln!("Error executing command '{}': {}", pull_command, e);
       }
   }
 }
-
 
 fn execute_command(session: &Session, command: &str) -> Result<(), Box<dyn Error>> {
     let mut channel = session.channel_session()?;
