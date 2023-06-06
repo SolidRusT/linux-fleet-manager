@@ -13,6 +13,7 @@ struct Config {
     packages: Packages,
     users: Users,
     services: Services,
+    repositories: Repositories,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -41,6 +42,11 @@ struct Services {
     restart: Vec<String>,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+struct Repositories {
+    global: Vec<String>,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = read_config("config.toml");
@@ -64,7 +70,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let packages_ref = Arc::new(config.packages);
     let users_ref = Arc::new(config.users);
-    let services_ref = Arc::new(config.services);    
+    let services_ref = Arc::new(config.services);
+    let repos_ref = Arc::new(config.repositories);   
 
     let handles: Vec<_> = config
         .hosts
@@ -78,6 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let packages_ref = Arc::clone(&packages_ref);
             let users_ref = Arc::clone(&users_ref);
             let services_ref = Arc::clone(&services_ref);
+            let repos_ref = Arc::clone(&repos_ref);
         
             tokio::spawn(async move {
                 match connect_to_host(&host_config).await {
@@ -85,6 +93,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         manage_packages(&session, &packages_ref.global);
                         manage_users(&session, &users_ref.global);
                         manage_services(&session, &services_ref.enable, &services_ref.restart);
+                        manage_repositories(&session, &repos_ref.global);
                     }
                     Err(e) => {
                         eprintln!("Error connecting to host {}: {}", host_name, e);
@@ -161,6 +170,16 @@ fn manage_services(session: &Session, enable: &[String], restart: &[String]) {
         }
     }
 }
+
+fn manage_repositories(session: &Session, repos: &[String]) {
+  for repo in repos {
+      let command = format!("git clone {}", repo);
+      if let Err(e) = execute_command(session, &command) {
+          eprintln!("Error executing command '{}': {}", command, e);
+      }
+  }
+}
+
 
 fn execute_command(session: &Session, command: &str) -> Result<(), Box<dyn Error>> {
     let mut channel = session.channel_session()?;
